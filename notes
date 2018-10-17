@@ -1,0 +1,84 @@
+1. delete
+
+
+2. In the userSchema add a new field caled as role 
+role:{
+    type:String,
+    required: true,
+    enum; ['admin','customer'],
+    default: 'customer'
+}
+
+3. To prevent from mass assignment , we setup strong parameters need to setup lodash.
+
+npm install --save lodash
+in users_controller.js
+const_ =require('lodash');
+
+in router.post('/) we add
+let body=_.pick(req.body, ['username','password','email']);
+
+4.create 2 users going to 
+post/users using postman
+
+
+manually update the role of the 1st user to be an admin from inside robo 3t
+
+
+
+5. setup authorize user middleware function
+in app/middlewares/authentication
+
+const authorizeUser = function(req,res,next){
+    if(req.locals.user.role == 'admin'){
+        next();
+    }else{
+        res.status(403).send('you are not authorized to access this page')
+    }
+}
+
+
+and also export authorizeUser
+
+module.exports={
+    authenticateUser,
+    authorizeUser
+}
+
+
+6. secuting our applications
+in categories_controller
+
+const{ authenticateUser,authorizeUser }=require('../middlewares
+/authentication');
+
+
+under route handlers
+router.post('/', authenticateUser,authorizeUser,(req,res)=>{
+
+    router.put('/:id',validateId,authenticateUser,authorizeUser,(req,res))
+
+ router.delete('/:id', validateId, authenticateUser,authorizeUser,(req,res))
+
+
+ in products_contrller
+
+ const { authenticateUser,authorizeUser }=require('../middlewares/authentication')
+
+ under route handlers
+router.post('/', authenticateUser,authorizeUser,(req,res)=>{
+
+    router.put('/:id', validateId,authenticateUser,authorizeUser,(req,res))
+
+
+    router.delete('/:id',validateId,authenticateUser,authorizeUser,(req,res))
+
+
+
+
+
+
+
+
+
+
