@@ -3,72 +3,76 @@ const Schema = mongoose.Schema;
 const { User } = require('../models/user');
 const sh = require('shorthash');
 
-const orderSchema =  new Schema({
-    orderNumber: {
+const orderSchema = new Schema({
+
+    orderNumber:{
         type: String,
         required: true,
         unique: true
     },
-    orderDate: {
+
+     orderDate:{
         type: Date,
         required: true,
         default: Date.now
     },
-    user: {
+
+    user:{
         type: Schema.Types.ObjectId,
         required: true,
         ref: 'User'
     },
-    total: {
-        type: Number,
+
+    total:{
+        type: Number, 
         default: 0,
         required: true
     },
-    status: {
+
+    status:{
         type: String,
-        enum: ['confirmed','packed','out of delivery','delivered'],
+        enum: ['confirmed', 'packed', 'out for delivery', 'delivered'],
         default: 'confirmed',
         required: true
     },
 
-    orderItems: [
-        {
-            product: {
-                type: Schema.Types.ObjectId,
-                require: true,
-                ref: 'Product'
-            },
-            price: {
-                type: Number,
-                required: true
-            },
-            quantity: {
-                type: Number,
-                required: true,
-                default: 1
-            }
+    orderItems:[{
+        product:{
+            type: Schema.Types.ObjectId,
+            required: true,
+            ref: 'Product'
+        },
+
+        price:{
+            type: Number,
+            required: true
+        },
+
+        quantity:{
+            type: Number,
+            required: true,
+            default: 1
         }
-    ]
+    }]
 });
 
-
-
-orderSchema.pre('validate',function(next){
+orderSchema.pre('validate', function(next){
     let order = this;
-    order.orderNumber = `DCT-${sh.unique(`${order.orderDate}+ ${order.user}`)}`;
+    order.orderNumber = `DCT-${sh.unique(`${order.orderDate} + ${order.user}`)}`;
     next();
-})
+});
 
-orderSchema.pre('save',function(next){
+orderSchema.pre('save', function(next){
     let order = this;
     let total = 0;
-    User.findOne({ _id: order.user}).populate('cartItems.product').then((user)=>{
+    //console.log(cartItem.product.price);
+    User.findOne({_id : order.user }).populate
+    ('cartItems.product').then((user) => {
         user.cartItems.forEach(function(cartItem){
-            order.orderItem.push({
-                product: cartItem.product._id,
-                price: cartItem.product_price,
+            order.orderItems.push({
+                product : cartItem.product._id,
+                price: cartItem.product.price,
                 quantity: cartItem.quantity
-
             });
             total += cartItem.product.price * cartItem.quantity;
         });
@@ -79,6 +83,6 @@ orderSchema.pre('save',function(next){
 
 const Order = mongoose.model('Order', orderSchema);
 
-module.exports={
+module.exports = {
     Order
 }
