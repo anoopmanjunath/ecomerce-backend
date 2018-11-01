@@ -1,7 +1,7 @@
 const { User } = require('../models/user');
 
 const authenticateUser = function(req,res,next){
-    let token = req.header('x-auth');
+    let token = req.header('x-auth'); //request header that contains the user id token.
     User.findByToken(token).then((user)=>{
         //TODO ------setup user object across routes
         req.locals={
@@ -19,7 +19,7 @@ const authenticateUser = function(req,res,next){
 
 //allow only the admin to add particular product , category
 
-const authorizeUser = function(req,res,next){
+const authorizeUser = function(req,res,next){ // to check if the logged in person is an admin or a user.
     if(req.locals.user.role == 'admin'){
         next();
     }else{

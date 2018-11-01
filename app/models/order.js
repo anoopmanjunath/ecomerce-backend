@@ -1,5 +1,8 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+const { User } = require('../models/user');
+const sh = require('shorthash');
+
 const orderSchema =  new Schema({
     orderNumber: {
         type: String,
@@ -48,7 +51,7 @@ const orderSchema =  new Schema({
     ]
 });
 
-const Order = mongoose.model('Order', orderSchema);
+
 
 orderSchema.pre('validate',function(next){
     let order = this;
@@ -67,12 +70,14 @@ orderSchema.pre('save',function(next){
                 quantity: cartItem.quantity
 
             });
-            total +=cartItem.product.price * cartItem.quantity;
+            total += cartItem.product.price * cartItem.quantity;
         });
         order.total = total;
         next();
     });
 });
+
+const Order = mongoose.model('Order', orderSchema);
 
 module.exports={
     Order

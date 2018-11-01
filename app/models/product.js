@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const productSchema = new Schema({
     category: {
-        type: Schema.Types.ObjectId,
+        type: Schema.Types.ObjectId,  // used for declaring paths in the schema that should be mongodb objectIDs.
         ref: 'Category'
     },
 

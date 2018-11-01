@@ -1,9 +1,11 @@
+const  mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 let bcrypt = require('bcryptjs');       //npm install --save bcryptjs
 let validator = require('validator');   //npm install --save validator
-const  mongoose = require('mongoose');
+
 const jwt = require('jsonwebtoken');       //npm install --save jsonwebtoken
-const { cartItemSchema, CartItem } = require('./cart_item');
-const Schema = mongoose.Schema;
+const { cartItemSchema } = require('./cart_item');
+
 
 const userSchema = new Schema({
     username: {
@@ -44,6 +46,14 @@ const userSchema = new Schema({
         default: 'customer'
     },
     CartItems: [cartItemSchema],
+    wishlist : [{
+        product : { type : Schema.Types.ObjectId, ref: 'product', required: true },
+        created_at : { type: Date, default: Date.now },
+        isPublic : { type: Boolean, default: true }
+
+    }]
+    
+});
 
     // wishList: [{
     //     product:{ 
@@ -60,7 +70,7 @@ const userSchema = new Schema({
         
     // }]
 
-});
+
 
 userSchema.pre('save', function(next){
     let user = this;
@@ -72,63 +82,54 @@ userSchema.pre('save', function(next){
     });
 });
 
-//instance method
-userSchema.methods.shortInfo = function(){
+userSchema.methods.shortInfo = function () { //instance method named shortInfo which returns the object that is being created. This function is written to return only the id and username and the email of the user.
     return {
         _id: this._id,
         username: this.username,
         email: this.email
     };
 };
-//instance method
-userSchema.methods.generateToken = function(next){
+
+userSchema.methods.generateToken = function (next) { //instance method to generate a token.
     let user = this;
     let tokenData = {
         _id: user.id
     };
+
     let token = jwt.sign(tokenData, 'supersecret');
-user.tokens.push({
-    token
-});
+    user.tokens.push({
+        token
+    });
 
     return user.save().then(() => {
+
         return token;
     });
 }
 
-
-
-
-
-// let user = new User({userName: 'Ganesh Gaitonde', email: 'gaitonde@gmail.com', password: 'something123'});
-
-// user.save().then((user) => {
-//     console.log(user);
-// }).catch((err) => {
-//     console.log(err);
-// });
-
-userSchema.statics.findByToken = function(token){
-    let User=this;
+userSchema.statics.findByToken = function (token) { // static method created to define the function findByToken
+    let User = this;
     let tokenData;
-    try{
-            tokenData = jwt.verify(token, 'supersecrete');
-    }catch(e){
+    try {
+        tokenData = jwt.verify(token, 'supersecret');
+    } catch (e) {
         return Promise.reject(e);
     }
+
     return User.findOne({
-        '_id':tokenData._id,
-        'tokens.token':token
-    }).then((user)=>{
-        if(user){
+        '_id': tokenData._id,
+        'tokens.token': token
+    }).then((user) => {
+        if (user) {
             return Promise.resolve(user);
-        }else{
+        } else {
             return Promise.reject(user);
         }
     })
 };
 
 const User = mongoose.model('User', userSchema);
+
 
 module.exports = {
     User
